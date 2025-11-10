@@ -14,31 +14,60 @@
     <main class="page-container">
         <h1>Giỏ Hàng của Bạn</h1>
         
-        <div class="cart-item">
-            <img src="https://images.unsplash.com/photo-1591115765321-045ff43d3c16?q=80&w=1974&auto=format&fit=crop" alt="Quần Short Adidas">
-            <div class="cart-item-info">
-                <h3>Quần Short Adidas</h3>
-                <p>700.000 VNĐ</p>
-                <p>Số lượng: 1</p>
-            </div>
-            <button style="background:none; border:none; color:red; cursor:pointer;">Xóa</button>
-        </div>
+        <div id="cart-container"></div>
+  <div class="cart-total" id="cart-total">Tổng: 0 VNĐ</div>
+  <button class="checkout-btn" id="checkout">Tiến hành thanh toán</button>
 
-        <div class="cart-item">
-            <img src="https://images.unsplash.com/photo-1593722844538-9f69d645a499?q=80&w=1974&auto=format&fit=crop" alt="Áo Chạy Bộ Nike">
-            <div class="cart-item-info">
-                <h3>Áo Chạy Bộ Nike</h3>
-                <p>850.000 VNĐ</p>
-                <p>Số lượng: 2</p>
-            </div>
-            <button style="background:none; border:none; color:red; cursor:pointer;">Xóa</button>
-        </div>
+  <script>
+    function renderCart() {
+      const container = document.getElementById("cart-container");
+      const totalElem = document.getElementById("cart-total");
+      let cart = JSON.parse(localStorage.getItem("cart")) || [];
 
-        <div class="cart-total">
-            <p>Tổng: 2.400.000 VNĐ</p>
-            <button class="checkout-btn">Tiến hành thanh toán</button>
-        </div>
+      container.innerHTML = "";
+      let total = 0;
 
+      cart.forEach((item, index) => {
+        const itemDiv = document.createElement("div");
+        itemDiv.className = "cart-item";
+        itemDiv.innerHTML = `
+          <img src="${item.img}" alt="${item.name}">
+          <div class="cart-item-info">
+            <h3>${item.name}</h3>
+            <p>${item.price.toLocaleString()} VNĐ</p>
+            <p>Số lượng: ${item.qty}</p>
+          </div>
+          <button class="remove-btn" data-index="${index}">Xóa</button>
+        `;
+        container.appendChild(itemDiv);
+        total += item.price * item.qty;
+      });
+
+      totalElem.textContent = "Tổng: " + total.toLocaleString() + " VNĐ";
+
+      document.querySelectorAll(".remove-btn").forEach(btn => {
+        btn.addEventListener("click", (e) => {
+          const index = e.target.dataset.index;
+          cart.splice(index, 1);
+          localStorage.setItem("cart", JSON.stringify(cart));
+          renderCart();
+        });
+      });
+    }
+
+    document.getElementById("checkout").addEventListener("click", () => {
+      const cart = JSON.parse(localStorage.getItem("cart")) || [];
+      if (cart.length === 0) {
+        alert("Giỏ hàng trống!");
+        return;
+      }
+      alert("Thanh toán thành công! Cảm ơn bạn đã mua hàng 🥳");
+      localStorage.removeItem("cart");
+      renderCart();
+    });
+
+    renderCart();
+  </script>
     </main>
 
 
@@ -104,6 +133,27 @@
     <p style="margin-top:5px;">Made with passion for athletes and sports lovers.</p>
   </div>
 </footer>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const removeButtons = document.querySelectorAll(".cart-item button");
+  const totalElement = document.querySelector(".cart-total p");
+
+  function updateTotal() {
+    const prices = Array.from(document.querySelectorAll(".cart-item p:first-of-type"))
+      .map(p => parseInt(p.textContent.replace(/[^\d]/g, "")));
+    const total = prices.reduce((a, b) => a + b, 0);
+    totalElement.textContent = `Tổng: ${total.toLocaleString()} VNĐ`;
+  }
+
+  removeButtons.forEach(button => {
+    button.addEventListener("click", (e) => {
+      const item = e.target.closest(".cart-item");
+      item.remove();
+      updateTotal();
+    });
+  });
+});
+</script>
 
 </body>
 </html>
